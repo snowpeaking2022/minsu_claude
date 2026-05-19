@@ -1,4 +1,7 @@
-﻿# Dependencies
+﻿# Claude editor configuration
+.claude/
+
+# Dependencies
 node_modules/
 vendor/
 
@@ -39,3 +42,28 @@ coverage/
 # Misc
 .cache/
 .temp/
+
+# Docker
+.dockerignore
+*.dockerfile
+
+# SSL
+docker/nginx/ssl/
+*.pem
+*.key
+*.crt
+
+# Database
+*.sql
+*.sql.gz
+
+# Laravel
+backend/storage/*.key
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitkeep
+backend/storage/logs/*.log
+
+# Nuxt
+front/.nuxt/
+front/.output/
+front/.cache/

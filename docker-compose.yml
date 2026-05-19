@@ -1,0 +1,75 @@
+services:
+  # PHP 8.2
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: shuiyunge-php
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/backend
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    depends_on:
+      - mysql
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: shuiyunge-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./backend:/var/www/backend
+      - ./front:/var/www/front
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/logs:/var/log/nginx
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - php
+
+  # MySQL 8.0
+  mysql:
+    image: mysql:8.0
+    container_name: shuiyunge-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: shuiyunge
+      MYSQL_USER: shuiyunge_user
+      MYSQL_PASSWORD: WaterCloud2026!
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: shuiyunge-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: rootpassword123
+
+  # Redis (可选，用于缓存)
+  redis:
+    image: redis:alpine
+    container_name: shuiyunge-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+volumes:
+  mysql_data:
+  redis_data:

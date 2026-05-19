@@ -1,0 +1,101 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push PHP image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./docker/php
+        file: ./docker/php/Dockerfile
+        push: false
+        tags: shuiyunge/php:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Nginx image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./docker/nginx
+        file: ./docker/nginx/Dockerfile
+        push: false
+        tags: shuiyunge/nginx:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Deploy to production
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        script: |
+          # 进入项目目录
+          cd /opt/shuiyunge
+
+          # 备份当前版本
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          mkdir -p /opt/shuiyunge_backups
+          tar -czf /opt/shuiyunge_backups/shuiyunge_backup_$TIMESTAMP.tar.gz .
+
+          # 拉取最新代码
+          git pull origin master
+
+          # 构建并启动服务
+          docker-compose -f docker-compose.prod.yml up -d --build
+
+          # 等待服务启动
+          sleep 30
+
+          # 运行数据库迁移
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan migrate --force
+
+          # 优化 Laravel 应用
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan config:cache
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan route:cache
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan view:cache
+
+          # 构建前端
+          cd /opt/shuiyunge/front
+          npm install --production
+          npm run generate
+
+          # 重启 Nginx
+          docker-compose -f docker-compose.prod.yml restart nginx
+
+          # 清理旧备份（保留最近 7 天）
+          find /opt/shuiyunge_backups -name "shuiyunge_backup_*.tar.gz" -type f -mtime +7 -delete
+
+          echo "部署完成！"
+
+    - name: Notify Slack (optional)
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: Deployment to production completed
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always()

@@ -1,0 +1,131 @@
+name: Simple Deploy to Production
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        source: "backend/,front/,docker/,docker-compose.prod.yml,deploy-prod.sh"
+        target: "/tmp/shuiyunge_deploy"
+        strip_components: 0
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        script: |
+          # 设置项目目录
+          PROJECT_DIR=/opt/shuiyunge
+          DEPLOY_DIR=/tmp/shuiyunge_deploy
+
+          # 检查项目目录是否存在
+          if [ ! -d "$PROJECT_DIR" ]; then
+            echo "项目目录不存在，正在初始化..."
+            mkdir -p $PROJECT_DIR
+            mv $DEPLOY_DIR/* $PROJECT_DIR/
+          else
+            # 备份当前版本
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            mkdir -p /opt/shuiyunge_backups
+            echo "备份当前版本..."
+            tar -czf /opt/shuiyunge_backups/shuiyunge_backup_$TIMESTAMP.tar.gz -C $PROJECT_DIR .
+
+            # 更新文件
+            echo "更新项目文件..."
+            rsync -av --delete \
+              --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='vendor' \
+              --exclude='.env' \
+              --exclude='docker/nginx/ssl' \
+              --exclude='storage' \
+              --exclude='front/.output' \
+              $DEPLOY_DIR/backend/ $PROJECT_DIR/backend/
+            rsync -av --delete \
+              --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='.nuxt' \
+              --exclude='.output' \
+              $DEPLOY_DIR/front/ $PROJECT_DIR/front/
+            rsync -av --delete $DEPLOY_DIR/docker/ $PROJECT_DIR/docker/
+            cp $DEPLOY_DIR/docker-compose.prod.yml $PROJECT_DIR/
+            cp $DEPLOY_DIR/deploy-prod.sh $PROJECT_DIR/
+          fi
+
+          # 清理临时目录
+          rm -rf $DEPLOY_DIR
+
+          # 进入项目目录
+          cd $PROJECT_DIR
+
+          # 检查 .env 文件
+          if [ ! -f "backend/.env" ]; then
+            echo "创建 .env 文件..."
+            cp backend/.env.example backend/.env
+            # 生成 APP_KEY
+            docker-compose -f docker-compose.prod.yml up -d php
+            sleep 10
+            docker-compose -f docker-compose.prod.yml exec -T php php artisan key:generate --force
+          fi
+
+          # 停止旧服务
+          docker-compose -f docker-compose.prod.yml down
+
+          # 构建并启动新服务
+          echo "构建并启动服务..."
+          docker-compose -f docker-compose.prod.yml up -d --build
+
+          # 等待服务启动
+          echo "等待服务启动..."
+          sleep 30
+
+          # 运行数据库迁移
+          echo "运行数据库迁移..."
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan migrate --force
+
+          # 优化 Laravel 应用
+          echo "优化 Laravel 应用..."
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan config:cache
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan route:cache
+          docker-compose -f docker-compose.prod.yml exec -T php php artisan view:cache
+
+          # 构建前端
+          echo "构建前端应用..."
+          cd $PROJECT_DIR/front
+          if [ ! -d "node_modules" ]; then
+            npm install --production
+          else
+            npm ci --production
+          fi
+          npm run generate
+
+          # 重启 Nginx
+          echo "重启 Nginx 服务..."
+          cd $PROJECT_DIR
+          docker-compose -f docker-compose.prod.yml restart nginx
+
+          # 清理旧备份（保留最近 7 天）
+          find /opt/shuiyunge_backups -name "shuiyunge_backup_*.tar.gz" -type f -mtime +7 -delete
+
+          # 清理 Docker 镜像
+          docker image prune -f
+
+          echo "部署完成！"
