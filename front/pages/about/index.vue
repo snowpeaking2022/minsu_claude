@@ -1,6 +1,5 @@
 <template>
-  <Layout>
-    <div class="about-page">
+  <div class="about-page">
       <!-- Hero Section -->
       <div class="about-hero">
         <div class="container">
@@ -42,7 +41,7 @@
           <div class="features-grid">
             <div class="feature-item" v-for="(feature, index) in features" :key="index">
               <div class="feature-icon">
-                <el-icon :size="48">{{ feature.icon }}</el-icon>
+                <span class="icon-placeholder">{{ index + 1 }}</span>
               </div>
               <h3 class="feature-title">{{ feature.title }}</h3>
               <p class="feature-description">{{ feature.description }}</p>
@@ -68,42 +67,34 @@
         </div>
       </section>
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
-import { Location, Star, Heart, Coffee, Sunset, ChatDotRound } from '@element-plus/icons-vue'
 
 const features = ref([
   {
     title: '绝佳位置',
-    description: '坐落于牛背梁景区脚下，交通便利，环境优美，是您休闲度假的理想选择。',
-    icon: Location
+    description: '坐落于牛背梁景区脚下，交通便利，环境优美，是您休闲度假的理想选择。'
   },
   {
     title: '贴心服务',
-    description: '我们的团队提供24小时贴心服务，让您感受到家的温暖与舒适。',
-    icon: Heart
+    description: '我们的团队提供24小时贴心服务，让您感受到家的温暖与舒适。'
   },
   {
     title: '品质保障',
-    description: '严格的卫生标准，高品质的房间设施，为您提供安心舒适的居住体验。',
-    icon: Star
+    description: '严格的卫生标准，高品质的房间设施，为您提供安心舒适的居住体验。'
   },
   {
     title: '美味餐饮',
-    description: '提供当地特色美食，新鲜食材，让您品尝地道的农家风味。',
-    icon: Coffee
+    description: '提供当地特色美食，新鲜食材，让您品尝地道的农家风味。'
   },
   {
     title: '美景环绕',
-    description: '周围风景如画，可观日出日落，感受大自然的神奇与美丽。',
-    icon: Sunset
+    description: '周围风景如画，可观日出日落，感受大自然的神奇与美丽。'
   },
   {
     title: '交流互动',
-    description: '定期举办各种活动，让客人之间交流互动，分享旅行的快乐。',
-    icon: ChatDotRound
+    description: '定期举办各种活动，让客人之间交流互动，分享旅行的快乐。'
   }
 ])
 
@@ -223,6 +214,11 @@ const team = ref([
   margin: 0 auto 25px;
   color: white;
   transition: transform 0.3s ease;
+}
+
+.icon-placeholder {
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 .feature-item:hover .feature-icon {

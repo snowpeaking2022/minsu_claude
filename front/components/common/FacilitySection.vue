@@ -7,9 +7,7 @@
       <div class="facility-grid">
         <div class="facility-item" v-for="(facility, index) in facilities" :key="index">
           <div class="facility-icon">
-            <el-icon :size="40">
-              <component :is="facility.icon" />
-            </el-icon>
+            <span class="facility-emoji">{{ facility.emoji }}</span>
           </div>
           <h3 class="facility-name">{{ facility.name }}</h3>
           <p class="facility-desc">{{ facility.description }}</p>
@@ -20,53 +18,51 @@
 </template>
 
 <script setup lang="ts">
-import { Wifi, CoffeePot, WaterCup, Van, MapLocation, Camera, Star, Fire, Wind, Umbrella } from '@element-plus/icons-vue'
-
 const facilities = [
   {
     name: '免费WiFi',
     description: '全屋高速网络覆盖',
-    icon: Wifi
+    emoji: '📶'
   },
   {
     name: '免费早餐',
     description: '新鲜营养早餐供应',
-    icon: CoffeePot
+    emoji: '🍳'
   },
   {
     name: '24小时热水',
     description: '全天候热水供应',
-    icon: WaterCup
+    emoji: '🚿'
   },
   {
     name: '免费停车',
     description: '宽敞停车场',
-    icon: Van
+    emoji: '🚗'
   },
   {
     name: '景区接送',
     description: '提供景区接送服务',
-    icon: MapLocation
+    emoji: '📍'
   },
   {
     name: '观景露台',
     description: '山景/园景露台',
-    icon: Camera
+    emoji: '📷'
   },
   {
     name: '星级服务',
     description: '专业贴心服务',
-    icon: Star
+    emoji: '⭐'
   },
   {
     name: '天然泉水',
     description: '山泉水供应',
-    icon: WaterCup
+    emoji: '💧'
   },
   {
     name: '中央空调',
     description: '四季恒温舒适',
-    icon: Wind
+    emoji: '❄️'
   }
 ]
 </script>
@@ -126,8 +122,11 @@ const facilities = [
   align-items: center;
   justify-content: center;
   margin: 0 auto 25px;
-  color: white;
   transition: transform 0.3s ease;
+}
+
+.facility-emoji {
+  font-size: 2rem;
 }
 
 .facility-item:hover .facility-icon {

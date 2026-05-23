@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@pinia/nuxt'],
   css: ['element-plus/dist/index.css'],
+  ssr: false,
   app: {
     head: {
       title: '水云阁民宿',

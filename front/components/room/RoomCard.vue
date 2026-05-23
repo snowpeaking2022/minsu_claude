@@ -23,16 +23,13 @@
 
       <div class="room-details">
         <div class="detail-item">
-          <el-icon><House /></el-icon>
-          <span>{{ room.room_type?.capacity }}人入住</span>
+          <span>👥 {{ room.room_type?.capacity }}人入住</span>
         </div>
         <div class="detail-item">
-          <el-icon><Star /></el-icon>
-          <span>评分 {{ room.rating || '4.8' }}分</span>
+          <span>⭐ 评分 {{ room.rating || '4.8' }}分</span>
         </div>
         <div class="detail-item">
-          <el-icon><Location /></el-icon>
-          <span>牛背梁景区</span>
+          <span>📍 牛背梁景区</span>
         </div>
       </div>
 
@@ -46,7 +43,7 @@
           {{ room.available ? '立即预订' : '已预订' }}
         </el-button>
         <NuxtLink :to="`/rooms/${room.id}`" class="view-detail">
-          查看详情 <el-icon><ArrowRight /></el-icon>
+          查看详情 →
         </NuxtLink>
       </div>
     </div>
@@ -54,7 +51,6 @@
 </template>
 
 <script setup lang="ts">
-import { House, Star, Location, ArrowRight } from '@element-plus/icons-vue'
 
 interface Room {
   id: string
@@ -202,10 +198,6 @@ const handleImageError = (event: Event) => {
   color: #7f8c8d;
 }
 
-.detail-item .el-icon {
-  color: #667eea;
-}
-
 .room-footer {
   display: flex;
   justify-content: space-between;
@@ -234,10 +226,6 @@ const handleImageError = (event: Event) => {
 
 .view-detail:hover {
   color: #764ba2;
-}
-
-.view-detail:hover .el-icon {
-  transform: translateX(3px);
 }
 
 @media (max-width: 768px) {

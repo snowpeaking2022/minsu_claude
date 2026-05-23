@@ -1,5 +1,5 @@
 <template>
-  <Layout>
+  <div>
     <HeroSection />
     <FacilitySection />
     <section class="rooms-preview">
@@ -19,10 +19,13 @@
         </div>
       </div>
     </section>
-  </Layout>
+  </div>
 </template>
 
 <script setup lang="ts">
+import HeroSection from '~/components/common/HeroSection.vue'
+import FacilitySection from '~/components/common/FacilitySection.vue'
+import RoomCard from '~/components/room/RoomCard.vue'
 import { useRoomStore } from '~/stores/room'
 
 const roomStore = useRoomStore()

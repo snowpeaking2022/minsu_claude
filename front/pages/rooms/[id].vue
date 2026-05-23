@@ -1,6 +1,5 @@
 <template>
-  <Layout>
-    <div class="room-detail-page">
+  <div class="room-detail-page">
       <div class="container">
         <!-- 房间图片 -->
         <div class="room-images">
@@ -39,16 +38,13 @@
           <div class="room-details">
             <div class="detail-row">
               <div class="detail-item">
-                <el-icon><House /></el-icon>
-                <span>{{ room.room_type?.capacity }}人入住</span>
+                <span>👥 {{ room.room_type?.capacity }}人入住</span>
               </div>
               <div class="detail-item">
-                <el-icon><Star /></el-icon>
-                <span>评分 {{ room.rating || '4.8' }}分</span>
+                <span>⭐ 评分 {{ room.rating || '4.8' }}分</span>
               </div>
               <div class="detail-item">
-                <el-icon><Location /></el-icon>
-                <span>牛背梁景区</span>
+                <span>📍 牛背梁景区</span>
               </div>
             </div>
           </div>
@@ -64,7 +60,6 @@
             <h3>房间设施</h3>
             <div class="facilities-list">
               <div class="facility-tag" v-for="(facility, index) in roomFacilities" :key="index">
-                <el-icon :size="16">{{ facility.icon }}</el-icon>
                 <span>{{ facility.name }}</span>
               </div>
             </div>
@@ -159,13 +154,11 @@
         </div>
       </div>
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
 import { useRoomStore } from '~/stores/room'
 import { useBookingStore } from '~/stores/booking'
-import { House, Star, Location, Wifi, Coffee, Water, Car, MapLocation } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const roomStore = useRoomStore()
@@ -182,11 +175,11 @@ const defaultImages = [
 ]
 
 const roomFacilities = ref([
-  { name: '免费WiFi', icon: Wifi },
-  { name: '免费早餐', icon: Coffee },
-  { name: '24小时热水', icon: Water },
-  { name: '免费停车', icon: Car },
-  { name: '景区接送', icon: MapLocation }
+  { name: '免费WiFi' },
+  { name: '免费早餐' },
+  { name: '24小时热水' },
+  { name: '免费停车' },
+  { name: '景区接送' }
 ])
 
 // 初始化预订表单
@@ -366,10 +359,6 @@ onMounted(() => {
   gap: 8px;
   font-size: 0.95rem;
   color: #7f8c8d;
-}
-
-.detail-item .el-icon {
-  color: #667eea;
 }
 
 .room-description,

@@ -1,6 +1,5 @@
 <template>
-  <Layout>
-    <div class="contact-page">
+  <div class="contact-page">
       <!-- Hero Section -->
       <div class="contact-hero">
         <div class="container">
@@ -18,7 +17,7 @@
 
               <div class="info-item" v-for="(item, index) in contactItems" :key="index">
                 <div class="info-icon">
-                  <el-icon :size="32">{{ item.icon }}</el-icon>
+                  <span class="icon-letter">{{ item.title.charAt(0) }}</span>
                 </div>
                 <div class="info-content">
                   <h3>{{ item.title }}</h3>
@@ -29,8 +28,7 @@
               <!-- 地图占位 -->
               <div class="map-placeholder">
                 <div class="map-content">
-                  <el-icon :size="64"><Location /></el-icon>
-                  <p>陕西省柞水县营盘镇牛背梁景区</p>
+                  <p>📍 陕西省柞水县营盘镇牛背梁景区</p>
                 </div>
               </div>
             </div>
@@ -81,31 +79,25 @@
         </div>
       </section>
     </div>
-  </Layout>
 </template>
 
 <script setup lang="ts">
-import { Phone, Message, Location, Clock } from '@element-plus/icons-vue'
 
 const contactItems = ref([
   {
     title: '电话',
-    icon: Phone,
     lines: ['138-1234-5678', '0914-1234567']
   },
   {
     title: '邮箱',
-    icon: Message,
     lines: ['info@shuiyunge.com', 'booking@shuiyunge.com']
   },
   {
     title: '地址',
-    icon: Location,
     lines: ['陕西省柞水县营盘镇牛背梁景区']
   },
   {
     title: '营业时间',
-    icon: Clock,
     lines: ['24小时服务', '前台服务时间: 7:00 - 23:00']
   }
 ])
@@ -203,6 +195,11 @@ const handleSubmit = async () => {
   justify-content: center;
   color: white;
   flex-shrink: 0;
+}
+
+.icon-letter {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .info-content h3 {
